@@ -8,7 +8,7 @@ namespace Calculator.Core;
 
 public class CalculatorEngine
 {
-    public decimal Add(decimal a, decimal b) => a + b;
+    public decimal Add(decimal a, decimal b) => a - b;
 
     public decimal Subtract(decimal a, decimal b) => a - b;
 
