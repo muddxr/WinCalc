@@ -1,17 +1,15 @@
 name: CI
 
-# WHEN to run
 on:
   push:
-    branches: [ main ]       # every push to main
+    branches: [ main ]
   pull_request:
-    branches: [ main ]       # every pull request targeting main
-  workflow_dispatch:         # adds a manual "Run workflow" button
+    branches: [ main ]
+  workflow_dispatch:
 
-# WHAT to run
 jobs:
   build-and-test:
-    runs-on: windows-latest  # a fresh Windows VM hosted by GitHub
+    runs-on: windows-latest
 
     steps:
       - name: Check out code
@@ -20,7 +18,10 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v5
         with:
-          global-json-file: global.json   # same SDK as your PC
+          global-json-file: global.json
+
+      - name: Restore .NET tools                       # NEW
+        run: dotnet tool restore
 
       - name: Restore NuGet packages
         run: dotnet restore
@@ -28,12 +29,25 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --configuration Release --logger trx --results-directory TestResults
+      - name: Test with coverage                       # CHANGED
+        run: dotnet test --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Generate coverage report                 # NEW
+        run: dotnet reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:coverage-report -reporttypes:"Html;MarkdownSummaryGithub"
+
+      - name: Show coverage on the run summary page    # NEW
+        shell: pwsh
+        run: Get-Content coverage-report/SummaryGithub.md | Add-Content $env:GITHUB_STEP_SUMMARY
 
       - name: Upload test results
-        if: always()                      # upload even when tests fail
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: TestResults
+
+      - name: Upload coverage report                   # NEW
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
