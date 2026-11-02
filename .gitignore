@@ -484,3 +484,7 @@ $RECYCLE.BIN/
 converage-report
 
 converage-report/
+
+# Local outputs (not part of the project)
+coverage-report/
+Claude outputs/
