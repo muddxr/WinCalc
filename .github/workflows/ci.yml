@@ -8,6 +8,23 @@ on:
   workflow_dispatch:
 
 jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build image
+        run: docker build -f src/Calculator.Api/Dockerfile -t wincalc-api:ci .
+
+      - name: Smoke test
+        run: |
+          docker run -d -p 8080:8080 --name wincalc-api wincalc-api:ci
+          curl --fail --retry 10 --retry-all-errors --retry-delay 1 http://localhost:8080/health
+          curl --fail "http://localhost:8080/calculate?a=10&b=4&op=divide"
+
+      - name: Show container logs
+        if: always()
+        run: docker logs wincalc-api
   build-and-test:
     runs-on: windows-latest
 

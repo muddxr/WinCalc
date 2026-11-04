@@ -1,0 +1,10 @@
+# Files Docker should not send to the build
+**/bin/
+**/obj/
+**/TestResults/
+.git/
+.vs/
+.github/
+*.user
+coverage-report/
+Claude outputs/
